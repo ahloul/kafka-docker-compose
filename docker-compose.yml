@@ -1,0 +1,39 @@
+version: '3.5'
+services:
+  zookeeper:
+    env_file: .env
+    container_name: ${ZOOKEEPER_CONTAINER_NAME}
+    image: confluentinc/cp-zookeeper:5.4.6
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
+    volumes:
+      - './.volumes/zookeeper/data:/var/lib/zookeeper/data'
+      - './.volumes/zookeeper/log:/var/lib/zookeeper/log'
+    restart: unless-stopped
+
+    networks:
+      - lotalty-service-app
+
+  kafka:
+    container_name: ${KAFKA_CONTAINER_NAME}
+
+    env_file: .env
+    image: confluentinc/cp-kafka:5.4.6
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+      KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - './.volumes/kafka/data:/var/lib/kafka/data'
+    restart: unless-stopped
+    networks:
+      - lotalty-service-app
+
+networks:
+  lotalty-service-app:
+    name: ${LOYALTY_NETWORK_NAME}
+    external: true
